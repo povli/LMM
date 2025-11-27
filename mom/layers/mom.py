@@ -488,7 +488,7 @@ class MomAttention(nn.Module):
 
         shared_hidden_states = hidden_states
         hidden_states, indices, sorted_indices, max_len, mask, mask_2 = transform(
-            hidden_states, routing_mask, self.num_memories, selected_memories, self.capacity, attention_mask)
+            hidden_states, routing_mask, self.num_memories, selected_memories, attention_mask)
 
         q = self.q_proj(hidden_states)
         if self.single_kv_proj:
