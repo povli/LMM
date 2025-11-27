@@ -7,6 +7,13 @@ from typing import TYPE_CHECKING, Dict, Optional, Tuple
 
 import torch
 import torch.nn as nn
+# --- [新增] 引入 Mamba2 ---
+try:
+    from mamba_ssm import Mamba2
+except ImportError:
+    Mamba2 = None
+    print("Warning: mamba_ssm not found, Shared Memory will fail if enabled.")
+# -------------------------
 from einops import rearrange
 from torch.nn import functional as F
 
@@ -356,10 +363,17 @@ class MomAttention(nn.Module):
                 for _ in range(self.num_memories)
             ])
             if self.shared_mem:
-                self.shared_k = nn.Linear(hidden_size, self.key_dim, bias=False)
-                self.shared_v = nn.Linear(hidden_size, self.value_dim, bias=False)
-                self.shared_b = nn.Linear(hidden_size, self.num_heads, bias=False)
-                self.shared_a = nn.Linear(hidden_size, self.num_heads, bias=False)
+                # --- [修改] 使用 Mamba2 作为共享骨干 ---
+                assert Mamba2 is not None, "Please install mamba_ssm to use shared_mem"
+                # 这里硬编码了 Mamba2 的推荐参数，你也可以将其提取到 Config 中
+                self.shared_mamba = Mamba2(
+                    d_model=hidden_size,
+                    d_state=128,  # SSM 状态维度，128 是标准配置
+                    d_conv=4,     # 局部卷积核大小
+                    expand=2,     # 扩展因子 (Block 内部维度 = 2 * hidden_size)
+                    headdim=64    # Mamba2 内核对 64 或 128 优化最好
+                )
+                # -------------------------------------
 
         A = torch.empty(self.num_heads, dtype=torch.float32).uniform_(0, 16)
         self.A_log = nn.Parameter(torch.log(A))
@@ -583,9 +597,16 @@ class MomAttention(nn.Module):
         o = rearrange(o, 'b l (h d) -> b l h d', h=self.num_heads)
         
         if self.shared_mem:
-            shared_o = self.shared_o(shared_hidden_states, attention_mask, recurrent_state,
-                                     use_cache, conv_state_q, conv_state_k, conv_state_v)
-            o += shared_o
+            # --- [修改] 调用 Mamba2 ---
+            # Mamba2 的 forward 只需要 hidden_states，它自己处理内部状态
+            # 注意：Mamba2 默认输出形状是 (batch, seq, d_model)
+            shared_o = self.shared_mamba(shared_hidden_states)
+
+            # 将 Mamba2 的输出叠加到路由记忆的输出上
+            # 注意：确保 o 和 shared_o 的维度一致。
+            # 如果 o 是 (batch, seq, num_heads * head_dim)，需要确保它等于 d_model
+            o = o + shared_o
+            # ------------------------
 
         if past_key_values is not None:
             past_key_values.update(
