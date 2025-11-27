@@ -17,7 +17,8 @@ from transformers.utils import logging
 #from fla.layers import MomAttention
 from mom.layers.mom import MomAttention
 from fla.layers.attn import Attention
-from fla.models.mom.configuration_mom import MomConfig
+#from fla.models.mom.configuration_mom import MomConfig
+from mom.models.mom.configuration_mom import MomConfig
 from fla.models.utils import Cache
 from fla.modules import FusedCrossEntropyLoss, FusedLinearCrossEntropyLoss
 from fla.modules import GatedMLP as MomMLP
