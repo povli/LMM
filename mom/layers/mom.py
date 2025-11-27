@@ -569,7 +569,7 @@ class MomAttention(nn.Module):
                 beta=cu_beta,
                 initial_state=recurrent_state[0],
                 output_final_state=use_cache,
-                use_qk_l2norm_in_kernel=True,
+                use_qk_l2norm_in_kernel=False,
                 cu_seqlens=cu_seqlens,
             )
             recurrent_state[0] = self.handle_recurrent_state(recurrent_state[0], recurrent_state_, cu_seqlens, cu_seqlen_all[0], reverse_indices)
@@ -584,7 +584,7 @@ class MomAttention(nn.Module):
                 beta=cu_beta,
                 initial_state=memories,
                 output_final_state=use_cache,
-                use_qk_l2norm_in_kernel=True,
+                use_qk_l2norm_in_kernel=False,
                 cu_seqlens=cu_seqlens,
             )
             recurrent_state[0] = self.handle_recurrent_state(recurrent_state[0], recurrent_state_, cu_seqlens, cu_seqlen_all[0], reverse_indices)
