@@ -111,7 +111,7 @@ def preprocess(
     logger.info(f'Tokenizer initialized:\n {tokenizer}')
 
     logger.info(f'Loading dataset: {dataset}')
-    dataset = load_dataset(dataset, name=None, split=split)
+    dataset = load_dataset(dataset, name=name, split=split) 
     dataset = dataset.shuffle(seed=seed)
     logger.info(f'Dataset loaded: {dataset}')
 
