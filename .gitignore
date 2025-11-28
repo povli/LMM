@@ -1,0 +1,88 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints
+
+# Virtual envs
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Packaging
+build/
+dist/
+.eggs/
+*.egg-info/
+pip-wheel-metadata/
+*.egg
+.installed.cfg
+
+# Testing / coverage
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.cache/
+.hypothesis/
+
+# Type checker / static analysis
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+
+# Editor settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs and temp files
+*.log
+*.out
+*.err
+*.tmp
+*.bak
+
+# Model weights and checkpoints
+*.ckpt
+*.pth
+*.pt
+*.bin
+*.safetensors
+checkpoint-*/
+checkpoints/
+
+# Training data, caches, and run artifacts
+data/
+training/data/
+training/cache/
+training/converted/
+training/exp/
+training/**/checkpoint-*/
+training/**/checkpoints/
+training/**/wandb/
+training/**/runs/
+training/**/logs/
+training/**/tensorboard/
+training/**/output/
+training/**/outputs/
+
+# Evaluation outputs
+eval_results/
+wandb/
+runs/
+logs/
+output/
+outputs/
