@@ -596,17 +596,6 @@ class MomAttention(nn.Module):
                 seq_len=seq_len, topk=self.topk, routing_weights=routing_weights, mask=mask)
         o = rearrange(o, 'b l (h d) -> b l h d', h=self.num_heads)
         
-        if self.shared_mem:
-            # --- [修改] 调用 Mamba2 ---
-            # Mamba2 的 forward 只需要 hidden_states，它自己处理内部状态
-            # 注意：Mamba2 默认输出形状是 (batch, seq, d_model)
-            shared_o = self.shared_mamba(shared_hidden_states)
-
-            # 将 Mamba2 的输出叠加到路由记忆的输出上
-            # 注意：确保 o 和 shared_o 的维度一致。
-            # 如果 o 是 (batch, seq, num_heads * head_dim)，需要确保它等于 d_model
-            o = o + shared_o
-            # ------------------------
 
         if past_key_values is not None:
             past_key_values.update(
@@ -623,6 +612,16 @@ class MomAttention(nn.Module):
             o = self.o_norm(o)
         o = rearrange(o, 'b t h d -> b t (h d)')
         o = self.o_proj(o)
+
+        # --- [新增] Mamba2 融合逻辑 ---
+        if self.shared_mem:
+            # Mamba2 输出 (B, L, D)
+            shared_o = self.shared_mamba(shared_hidden_states)
+            
+            # 确保两者在同一设备和类型（通常不需要，但保险起见）
+            # 直接相加，因为此时 o 也是 (B, L, D)
+            o = o + shared_o
+        # -----------------------------
 
         if origin_cu_seqlens is not None:
             indices, _, _ = get_unpad_data(attention_mask[:, -seq_len:])
