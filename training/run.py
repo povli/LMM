@@ -3,7 +3,20 @@
 from datasets import load_from_disk
 from transformers import (AutoConfig, AutoModelForCausalLM, AutoTokenizer,
                           Trainer, set_seed)
-
+# ==================== [新增] 手动注册 MoM 架构 ====================
+# 强制告诉 Transformers 怎么处理 'mom' 模型
+try:
+    from mom.models.mom.configuration_mom import MomConfig
+    from mom.models.mom.modeling_mom import MomForCausalLM
+    
+    print("正在注册 MoM 模型架构...", flush=True)
+    AutoConfig.register("mom", MomConfig)
+    AutoModelForCausalLM.register(MomConfig, MomForCausalLM)
+    print("✅ MoM 模型架构注册成功！", flush=True)
+except ImportError as e:
+    print(f"❌ 注册失败: 找不到 mom 包. 请确认已运行 pip install -e . \n错误详情: {e}")
+    sys.exit(1)
+# ================================================================
 import sys
 import os
 import torch
